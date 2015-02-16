@@ -1,0 +1,294 @@
+.template 0
+
+# exec a command and redirects the output as a function return value
+function global.file__exec(cmd)
+  my.outname = "/tmp/gslcmd_$(string.hash(my.cmd)).out"
+  my.errname = "/tmp/gslcmd_$(string.hash(my.cmd)).err"
+  my.p = proc.new(my.cmd, '.', '/dev/stdin', my.outname, my.errname)
+  my.p.run()
+  my.res = file.slurp(my.outname) ? ""
+  file.delete(my.outname)
+  file.delete(my.errname)
+  return my.res
+endfunction
+
+function global.exec(cmd)
+  return file__exec(my.cmd)
+endfunction
+
+function global.file__chmod(mode, file)
+  file__exec('chmod $(my.mode:) $(my.file:)')
+endfunction
+
+function global.chmod(mode, file)
+  file__chmod(my.mode, my.file)
+endfunction
+
+function global.file__diff(f1, f2)
+  return file__exec('diff $(my.f1:) $(my.f2:)')
+endfunction
+
+function global.diff(f1, f2)
+  return file__diff(my.f1, my.f2)
+endfunction
+
+function global.file__samefiles(f1, f2)
+  conditional__check_arg_missing('samefiles', 'f1', my.f1)
+  conditional__check_arg_missing('samefiles', 'f2', my.f2)
+  
+  if !file.exists(my.f1)
+    # log('"$(my.f1:)" file doesnot exist', 'file__samefiles')
+    return 0
+  endif
+
+  if !file.exists(my.f2)
+    # log('"$(my.f2:)" file doesnot exist', 'file__samefiles')
+    return 0
+  endif
+
+  my.err = ''
+  my.cnt1 = file.slurp(my.f1, my.err)?
+
+  if !defined(my.cnt1)
+    # log('Error (cnt1): $(my.err:)', 'file__samefiles')
+    return 0
+  endif
+
+  my.err = ''
+  my.cnt2 = file.slurp(my.f2, my.err)?
+
+  if !defined(my.cnt2)
+    # log('Error (cnt2): $(my.err:)', 'file__samefiles')
+    return 0
+  endif
+
+  my.h1 = string.hash(my.cnt1)
+  my.h2 = string.hash(my.cnt2)
+
+  # if my.h1 <> my.h2
+  #   log('f1($(my.f1:)) <> f2($(my.f2:))', 'file__samefiles')
+  #   log('h1($(my.h1:)) <> h2($(my.h2:))', 'file__samefiles')
+  #   log('cnt1($(my.cnt1:)) <> cnt2($(my.cnt2:))', 'file__samefiles')
+  # endif
+
+  return my.h1 = my.h2
+endfunction
+
+function global.samefiles(f1, f2)
+  return file__samefiles(my.f1, my.f2)
+endfunction
+
+.template 1
+.macro global.file__copyleft
+# $(project.name)
+# Copyright (C) 2014  $(project.vendor ? project.name) developers <$(project.vendor_email ? project.admin_email)> (see AUTHORS)
+#
+.if defined(project.license) & project.license = "agpl"
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.else
+# All rights reserved.
+.endif
+.endmacro
+.
+.macro global.copyleft
+. file__copyleft()
+.endmacro
+.endtemplate
+
+.template 1
+.macro global.file__copyleft2
+/*
+ * $(project.name)
+ * Copyright (C) 2014  $(project.vendor ? project.name) developers <$(project.vendor_email ? project.admin_email)> (see AUTHORS)
+ *
+.if defined(project.license) & project.license = "agpl"
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.else
+ * All rights reserved.
+.endif
+ */
+.endmacro
+.
+.macro global.copyleft2
+. file__copyleft2()
+.endmacro
+.endtemplate
+
+function global.file__create_empty_file(filename, has_copyleft)
+  output(my.filename)
+  if my.has_copyleft
+    file__copyleft()
+  endif
+endfunction
+
+function global.create_empty_files(filename, has_copyleft)
+  file__create_empty_files(my.filename, my.has_copyleft)
+endfunction
+
+function global.file__escape_file(filename)
+  in = file.open(my.filename, "r")
+  s = ""
+  xline = file.read(in)?
+
+  while defined(xline)
+    xline = string.replace(xline, "\\|\\\\")
+    xline = string.replace(xline, "\$(|\\\$(")
+
+    if first_char(xline) = "."
+      xline = '\\.' + string.substr(xline, 1)
+    endif
+
+    s += xline
+
+    xline = file.read(in)?
+  endwhile
+
+  file.close(in)
+  return s
+endfunction
+
+function global.escape_file(filename)
+  return file__escape_file(my.filename)
+endfunction
+
+function global.file__get_extension(fn)
+  my.path = file.basename(my.fn)
+  return string.replace(my.fn, my.path + '.|')
+endfunction
+
+function global.get_extension(fn)
+  return file__get_extension(my.fn)
+endfunction
+
+function global.file__check_extension(fn, ext)
+  return file__get_extension(my.fn) = my.ext
+endfunction
+
+function global.check_extension(fn, ext)
+  return file__check_extension(my.fn, my.ext)
+endfunction
+
+function global.file__check_one_ext(filename, ext)
+  return defined(string.locate_last(my.filename + '$', my.ext))
+endfunction
+
+function global.check_one_ext(filename, ext)
+  return file__check_one_ext(my.filename, my.ext)
+endfunction
+
+function global.file__get_path(path)
+  my.s = ""
+  
+  while string.cntch(my.path, '/')
+    my.prefix = string.prefix(my.path, '/')
+    my.s += my.prefix + '/'
+    my.path = string.substr(my.path, string.length(my.prefix)+1)
+  endwhile
+
+  return my.s
+endfunction
+
+function global.get_path(path)
+  return file__get_path(my.path)
+endfunction
+
+function global.file__convert_images(ctx, path, projectdir)
+  my.ctx ?= project
+  my.path ?= ""
+  my.projectdir ?= global.projectdir
+
+  my.srcdir = directory.resolve('.$(my.path:)')
+  my.dstdir = directory.resolve('$(my.projectdir:)$(my.path:)')
+
+  for my.ctx.image as i
+    my.src = '$(my.srcdir:)$(my.ctx.name:)'
+    my.dst = '$(my.dstdir:)$(i.name:)'
+    log('convert "$(my.ctx.name:)" to "$(i.name:)"', 'file__convert_images')
+
+    my.prefix_options = ''
+    my.options = ''
+    
+    if defined(i.resize)
+      my.options += ' -resize $(i.resize:)'
+    endif
+
+    for i.replace as r
+      if defined(r.fill) & defined(r.opaque)
+        if defined(r.fuzz)
+          my.options += ' -fuzz $(r.fuzz:)'
+        endif
+        my.options += ' -fill $(r.fill:) -opaque $(r.opaque:)'
+      endif
+    endfor
+
+    my.prefix_options += ' -background $(i.background?"none":)'
+
+    file__exec("convert $(my.prefix_options:) $(my.src:) $(my.options:) $(my.dst:)")
+  endfor
+endfunction
+
+function global.file__copy_single_files(ctx, path, projectdir)
+  my.ctx ?= project
+  my.path ?= ""
+  my.projectdir ?= global.projectdir
+
+  my.srcdir = directory.resolve('.$(my.path:)')
+  my.dstdir = directory.resolve('$(my.projectdir:)$(my.path:)')
+
+  for my.ctx.file as f
+    my.src = '$(my.srcdir:)$(f.name:)'
+    my.dst = '$(my.dstdir:)$(f.name:)'
+    log('copy file "$(f.name:)"', 'file__copy_single_files')
+    file.copy(my.src, my.dst)
+
+    if defined(f->image)
+      file__convert_images(f, my.path, my.projectdir)
+    endif
+  endfor
+endfunction
+
+function global.file__copy_files(ctx, path, projectdir)
+  my.ctx ?= project
+  my.path ?= ""
+  my.projectdir ?= global.projectdir
+
+  file__copy_single_files(my.ctx, my.path, my.projectdir)
+
+  for my.ctx.dir as d
+    my.local_path = '$(my.path)/$(d.name?:)'
+    if !file.exists(my.projectdir + my.local_path)
+      log('create directory "$(my.local_path:)"', 'file__copy_files')
+      directory.create(my.projectdir + my.local_path)
+    endif
+    
+    file__copy_single_files(d, my.local_path, my.projectdir)
+
+    if defined(d->dir)
+      file__copy_files(d, my.local_path, my.projectdir)
+    endif
+  endfor
+endfunction
+
+.endtemplate

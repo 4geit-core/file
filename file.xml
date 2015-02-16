@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<core name="file" version="0.1.0">
+  <core name="conditional" required_version="0.1.0"/>
+  <core name="string" required_version="0.1.0"/>
+
+  <function name="exec"/>
+  <function name="chmod"/>
+  <function name="diff"/>
+  <function name="samefiles"/>
+  <macro name="copyleft"/>
+  <function name="create_empty_file"/>
+  <function name="escape_file"/>
+  <function name="get_extension"/>
+  <function name="check_extension"/>
+  <function name="check_one_ext"/>
+  <function name="get_path"/>
+  <function name="convert_images"/>
+  <function name="copy_single_files"/>
+  <function name="copy_files"/>
+</core>
