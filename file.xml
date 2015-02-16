@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
-<core name="file" version="0.1.0">
-  <core name="conditional" required_version="0.1.0"/>
-  <core name="string" required_version="0.1.0"/>
+<core name="file" branch="master">
+  <core name="conditional" required_branch="master"/>
+  <core name="string" required_branch="master"/>
 
   <function name="exec"/>
   <function name="chmod"/>
