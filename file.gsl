@@ -2,11 +2,14 @@
 
 # exec a command and redirects the output as a function return value
 function global.file__exec(cmd)
+  debug('exec "$(my.cmd:)"')
   my.outname = "/tmp/gslcmd_$(string.hash(my.cmd)).out"
   my.errname = "/tmp/gslcmd_$(string.hash(my.cmd)).err"
   my.p = proc.new(my.cmd, '.', '/dev/stdin', my.outname, my.errname)
   my.p.run()
-  my.res = file.slurp(my.outname) ? ""
+  my.res = XML.new()
+  define my.res.out = file.slurp(my.outname) ? ""
+  define my.res.err = file.slurp(my.errname) ? ""
   file.delete(my.outname)
   file.delete(my.errname)
   return my.res
