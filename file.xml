@@ -18,4 +18,10 @@
   <function name="convert_images"/>
   <function name="copy_single_files"/>
   <function name="copy_files"/>
+
+  <protocol>
+    <node name="project">
+      <attribute name="admin_email" required="True"/>
+    </node>
+  </protocol>
 </core>
