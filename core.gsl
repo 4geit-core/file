@@ -81,10 +81,19 @@ function global.samefiles(f1, f2)
   return file__samefiles(my.f1, my.f2)
 endfunction
 
+function get_email
+  if defined(project.vendor_email)
+    return "<$(project.vendor_email:)>"
+  elsif defined(project.admin_email)
+    return "<$(project.admin_email:)>"
+  endif
+  return ""
+endfunction
+
 .template 1
 .macro global.file__copyleft
 # $(project.name)
-# Copyright (C) 2014  $(project.vendor ? project.name) developers <$(project.vendor_email ? project.admin_email)> (see AUTHORS)
+# Copyright (C) 2014  $(project.vendor ? project.name) developers $(get_email():) (see AUTHORS)
 #
 .if defined(project.license) & project.license = "agpl"
 # This program is free software: you can redistribute it and/or modify
