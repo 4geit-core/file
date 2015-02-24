@@ -289,7 +289,7 @@ function global.file__copy_files(ctx, path, projectdir)
   file__copy_single_files(my.ctx, my.path, my.projectdir)
 
   for my.ctx.dir as d
-    my.local_path = '$(my.path)/$(d.name?:)'
+    my.local_path = '$(my.path:)/$(d.name?:)'
     if !file.exists(my.projectdir + my.local_path)
       log('create directory "$(my.local_path:)"', 'file__copy_files')
       directory.create(my.projectdir + my.local_path)
