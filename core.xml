@@ -15,9 +15,6 @@
   <function name="check_extension"/>
   <function name="check_one_ext"/>
   <function name="get_path"/>
-  <function name="convert_images"/>
-  <function name="copy_single_files"/>
-  <function name="copy_files"/>
 
   <protocol>
     <node name="project">
