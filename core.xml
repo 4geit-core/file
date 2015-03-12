@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<core name="file" branch="master">
+<core name="file" branch="master" description="4i core library handling high-level file manipulation functions">
   <core name="conditional" required_branch="master"/>
   <core name="string" required_branch="master"/>
 
