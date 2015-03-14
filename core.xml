@@ -16,6 +16,8 @@
   <function name="check_one_ext"/>
   <function name="get_path"/>
 
+  <todo>use gsl block directive within copyleft macro in order to make it generic with any languages comments</todo>
+  
   <protocol>
     <node name="project">
       <attribute name="admin_email" required="True"/>
